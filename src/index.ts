@@ -4,6 +4,8 @@ import { handlerLogin, registerCommand, runCommand, type CommandsRegistry } from
 function main() {
   const cr: CommandsRegistry = {};
   registerCommand(cr, "login", handlerLogin);
+
+  // Handle CLI input
   if (process.argv.length < 3) {
     console.log("No command provided");
     process.exit(1);
@@ -11,6 +13,8 @@ function main() {
   const argv = process.argv.slice(2);
   const command = argv[0];
   const args: string[] = argv.slice(1);
+  
+  // Attempt to run command
   try {
     runCommand(cr, command, ...args);
   } catch (error) {
