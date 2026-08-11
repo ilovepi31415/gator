@@ -1,23 +1,49 @@
 import { setUser } from "./config";
+import { createUser, getUser } from "./lib/db/queries/users";
 
-export type CommandHandler = (cmdName: string, ...args: string[]) => void;
+export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 export type CommandsRegistry = Record<string, CommandHandler>;
 
-export function handlerLogin(cmdName: string, ...args: string[]) {
+export async function handlerLogin(cmdName: string, ...args: string[]) {
     if (args.length < 1) {
         throw new Error("Username argument expected");
     }
+    const name = args[0];
     if (cmdName == "login") {
-        setUser(args[0]);
+        const response = await getUser(name);
+        if (!response) {
+            throw new Error("User does not exist");
+        }
+        setUser(name);
+        console.log(`User ${name} logged in`);
     }
-    console.log(`User ${args[0]} logged in`);
+}
+
+export async function handlerRegister(cmdName: string, ...args: string[]) {
+    if (args.length < 1) {
+        throw new Error("Username argument expected");
+    }
+    const name = args[0]
+    if (cmdName == "register") {
+        console.log("hello")
+        const response = await getUser(name);
+        console.log("hi")
+        if (response) {
+            throw new Error("User already exists")
+        }
+        await createUser(name);
+        console.log(`User ${name} created`);
+        const data = await getUser(name);
+        console.log(data);
+        handlerLogin("login", ...args);
+    }
 }
 
 export function registerCommand(registry: CommandsRegistry, cmdName: string, handler: CommandHandler) {
     registry[cmdName] = handler;
 }
 
-export function runCommand(registry: CommandsRegistry, cmdName: string, ...args: string[]) {
+export async function runCommand(registry: CommandsRegistry, cmdName: string, ...args: string[]) {
     registry[cmdName](cmdName, ...args);
 }
 

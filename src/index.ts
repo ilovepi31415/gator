@@ -1,9 +1,9 @@
-import { SyncShare } from "node:stream/iter";
-import { handlerLogin, registerCommand, runCommand, type CommandsRegistry } from "./commands";
+import { handlerLogin, handlerRegister, registerCommand, runCommand, type CommandsRegistry } from "./commands";
 
-function main() {
+async function main() {
   const cr: CommandsRegistry = {};
   registerCommand(cr, "login", handlerLogin);
+  registerCommand(cr, "register", handlerRegister);
 
   // Handle CLI input
   if (process.argv.length < 3) {
@@ -16,7 +16,7 @@ function main() {
   
   // Attempt to run command
   try {
-    runCommand(cr, command, ...args);
+    await runCommand(cr, command, ...args);
   } catch (error) {
     if (error instanceof Error) {
       console.log(error.message);
@@ -25,6 +25,7 @@ function main() {
     }
     process.exit(1);
   }
+  process.exit(0);
 }
 
 main();
