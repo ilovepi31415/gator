@@ -1,12 +1,24 @@
 import { url } from "node:inspector";
 import { readConfig, setUser } from "./config";
 import { fetchFeed } from "./feed";
-import { createFeed, createFeedFollow, getFeedByUrl, getFeeds, getFeedsFollowedByUser, printFeed } from "./lib/db/queries/feeds";
+import { createFeed, createFeedFollow, getFeedByUrl, getFeeds, getFeedsFollowedByUser, printFeed, User } from "./lib/db/queries/feeds";
 import { createUser, getUser, getUserById, getUsers, resetUsers } from "./lib/db/queries/users";
 import { UUID } from "node:crypto";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
+export type UserCommandHandler = (cmdName: string, user: User, ...args: string[]) => Promise<void>;
 export type CommandsRegistry = Record<string, CommandHandler>;
+
+export function middlewareLoggedIn(handler: UserCommandHandler): CommandHandler {
+    return async (cmdName: string, ...args: string[]) => {
+            const cfg = readConfig();
+        const user = await getUser(cfg.currentUserName);
+        if (!user) {
+            throw new Error(`User ${cfg.currentUserName} not found`);
+        }
+        await handler(cmdName, user, ...args);
+    }
+}
 
 export async function handlerLogin(cmdName: string, ...args: string[]) {
     if (args.length < 1) {
@@ -64,11 +76,12 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
     console.log(JSON.stringify(response));
 }
 
-export async function handlerAddFeed(cmdName: string, ...args: string[]) {
+export async function handlerAddFeed(cmdName: string, user: User, ...args: string[]) {
+    // Get current user
     const name = args[0];
     const url = args[1];
-    const cfg = readConfig();
-    const user = await getUser(cfg.currentUserName);
+
+    // Create feed and record following
     const feed = await createFeed(name, url, user.id);
     const followed_feed = await createFeedFollow(feed, user);
     printFeed(followed_feed.feeds, followed_feed.users);
@@ -84,19 +97,18 @@ export async function handlerFeeds(cmdName: string, ...args: string[]) {
     };
 }
 
-export async function handlerFollow(cmdName: string, ...args: string[]) {
+export async function handlerFollow(cmdName: string, user: User, ...args: string[]) {
     const url = args[0];
     const feed = await getFeedByUrl(url);
-    const username = readConfig().currentUserName;
-    const user = await getUser(username);
     const response = await createFeedFollow(feed, user);
     console.log(`User ${response.users.name} followed Feed ${response.feeds.name}`);
 }
 
-export async function handlerFollowing(cmdName: string, ...args: string[]) {
-    const username = readConfig().currentUserName;
-    const user = await getUser(username);
+export async function handlerFollowing(cmdName: string, user: User, ...args: string[]) {
+    // Query feeds based on current user
     const feeds_followed = await getFeedsFollowedByUser(user);
+    
+    // Display results
     console.log("Following feeds:")
     for (const feed of feeds_followed) {
         console.log(` - ${feed.feeds.name}`);
