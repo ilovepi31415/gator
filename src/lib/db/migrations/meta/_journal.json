@@ -22,6 +22,13 @@
       "when": 1786418939684,
       "tag": "0002_curious_greymalkin",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786419771104,
+      "tag": "0003_clever_chamber",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,7 @@
 import { url } from "node:inspector";
 import { readConfig, setUser } from "./config";
 import { fetchFeed } from "./feed";
-import { createFeed, getFeeds, printFeed } from "./lib/db/queries/feeds";
+import { createFeed, createFeedFollow, getFeedByUrl, getFeeds, getFeedsFollowedByUser, printFeed } from "./lib/db/queries/feeds";
 import { createUser, getUser, getUserById, getUsers, resetUsers } from "./lib/db/queries/users";
 import { UUID } from "node:crypto";
 
@@ -70,7 +70,8 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]) {
     const cfg = readConfig();
     const user = await getUser(cfg.currentUserName);
     const feed = await createFeed(name, url, user.id);
-    printFeed(feed, user);
+    const followed_feed = await createFeedFollow(feed, user);
+    printFeed(followed_feed.feeds, followed_feed.users);
 }
 
 export async function handlerFeeds(cmdName: string, ...args: string[]) {
@@ -81,6 +82,25 @@ export async function handlerFeeds(cmdName: string, ...args: string[]) {
         const user = await getUserById(feed.user_id);
         console.log(` - created by: ${user.name}`);
     };
+}
+
+export async function handlerFollow(cmdName: string, ...args: string[]) {
+    const url = args[0];
+    const feed = await getFeedByUrl(url);
+    const username = readConfig().currentUserName;
+    const user = await getUser(username);
+    const response = await createFeedFollow(feed, user);
+    console.log(`User ${response.users.name} followed Feed ${response.feeds.name}`);
+}
+
+export async function handlerFollowing(cmdName: string, ...args: string[]) {
+    const username = readConfig().currentUserName;
+    const user = await getUser(username);
+    const feeds_followed = await getFeedsFollowedByUser(user);
+    console.log("Following feeds:")
+    for (const feed of feeds_followed) {
+        console.log(` - ${feed.feeds.name}`);
+    }
 }
 
 export function registerCommand(registry: CommandsRegistry, cmdName: string, handler: CommandHandler) {
