@@ -1,5 +1,5 @@
 import { setUser } from "./config";
-import { createUser, getUser } from "./lib/db/queries/users";
+import { createUser, getUser, resetUsers } from "./lib/db/queries/users";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 export type CommandsRegistry = Record<string, CommandHandler>;
@@ -25,9 +25,7 @@ export async function handlerRegister(cmdName: string, ...args: string[]) {
     }
     const name = args[0]
     if (cmdName == "register") {
-        console.log("hello")
         const response = await getUser(name);
-        console.log("hi")
         if (response) {
             throw new Error("User already exists")
         }
@@ -35,8 +33,12 @@ export async function handlerRegister(cmdName: string, ...args: string[]) {
         console.log(`User ${name} created`);
         const data = await getUser(name);
         console.log(data);
-        handlerLogin("login", ...args);
+        await handlerLogin("login", ...args);
     }
+}
+
+export async function handlerReset(cmdName: string, ...args: string[]) {
+    await resetUsers();
 }
 
 export function registerCommand(registry: CommandsRegistry, cmdName: string, handler: CommandHandler) {
@@ -44,6 +46,6 @@ export function registerCommand(registry: CommandsRegistry, cmdName: string, han
 }
 
 export async function runCommand(registry: CommandsRegistry, cmdName: string, ...args: string[]) {
-    registry[cmdName](cmdName, ...args);
+    await registry[cmdName](cmdName, ...args);
 }
 
