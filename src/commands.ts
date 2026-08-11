@@ -1,5 +1,7 @@
+import { url } from "node:inspector";
 import { readConfig, setUser } from "./config";
 import { fetchFeed } from "./feed";
+import { createFeed, printFeed } from "./lib/db/queries/feeds";
 import { createUser, getUser, getUsers, resetUsers } from "./lib/db/queries/users";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
@@ -59,6 +61,15 @@ export async function handlerUsers(cmdName: string, ...args: string[]) {
 export async function handlerAgg(cmdName: string, ...args: string[]) {
     const response = await fetchFeed("https://www.wagslane.dev/index.xml");
     console.log(JSON.stringify(response));
+}
+
+export async function handlerAddFeed(cmdName: string, ...args: string[]) {
+    const name = args[0];
+    const url = args[1];
+    const cfg = readConfig();
+    const user = await getUser(cfg.currentUserName);
+    const feed = await createFeed(name, url, user.id);
+    printFeed(feed, user);
 }
 
 export function registerCommand(registry: CommandsRegistry, cmdName: string, handler: CommandHandler) {

@@ -8,6 +8,13 @@
       "when": 1786341746060,
       "tag": "0000_huge_purple_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786413816207,
+      "tag": "0001_keen_power_man",
+      "breakpoints": true
     }
   ]
 }
