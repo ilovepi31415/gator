@@ -1,7 +1,7 @@
 import { url } from "node:inspector";
 import { readConfig, setUser } from "./config";
 import { fetchFeed } from "./feed";
-import { createFeed, createFeedFollow, getFeedByUrl, getFeeds, getFeedsFollowedByUser, printFeed, User } from "./lib/db/queries/feeds";
+import { createFeed, createFeedFollow, getFeedByUrl, getFeeds, getFeedsFollowedByUser, printFeed, unfollow, User } from "./lib/db/queries/feeds";
 import { createUser, getUser, getUserById, getUsers, resetUsers } from "./lib/db/queries/users";
 import { UUID } from "node:crypto";
 
@@ -113,6 +113,12 @@ export async function handlerFollowing(cmdName: string, user: User, ...args: str
     for (const feed of feeds_followed) {
         console.log(` - ${feed.feeds.name}`);
     }
+}
+
+export async function handlerUnfollow(cmdName: string, user: User, ...args: string[]) {
+    const feedUrl = args[0];
+    const feed = await getFeedByUrl(feedUrl);
+    await unfollow(feed, user);
 }
 
 export function registerCommand(registry: CommandsRegistry, cmdName: string, handler: CommandHandler) {

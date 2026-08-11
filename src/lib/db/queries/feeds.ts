@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "..";
 import { feed_follows, feeds, users } from "../schema";
 import { from } from "node:stream/iter";
@@ -46,4 +46,8 @@ export async function createFeedFollow(feed: Feed, user: User) {
         .innerJoin(feeds, eq(feed_follows.feed_id, feeds.id))
         .where(eq(feed_follows.id, newFeedFollow.id));
     return result;
+}
+
+export async function unfollow(feed: Feed, user: User) {
+    await db.delete(feed_follows).where(and(eq(feed_follows.feed_id, feed.id), eq(feed_follows.user_id, user.id)));
 }
