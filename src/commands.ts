@@ -1,8 +1,9 @@
 import { url } from "node:inspector";
 import { readConfig, setUser } from "./config";
 import { fetchFeed } from "./feed";
-import { createFeed, printFeed } from "./lib/db/queries/feeds";
-import { createUser, getUser, getUsers, resetUsers } from "./lib/db/queries/users";
+import { createFeed, getFeeds, printFeed } from "./lib/db/queries/feeds";
+import { createUser, getUser, getUserById, getUsers, resetUsers } from "./lib/db/queries/users";
+import { UUID } from "node:crypto";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 export type CommandsRegistry = Record<string, CommandHandler>;
@@ -70,6 +71,16 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]) {
     const user = await getUser(cfg.currentUserName);
     const feed = await createFeed(name, url, user.id);
     printFeed(feed, user);
+}
+
+export async function handlerFeeds(cmdName: string, ...args: string[]) {
+    const feeds = await getFeeds();
+    for (const feed of feeds) {
+        console.log(`Feed: ${feed.name}`);
+        console.log(` - url: ${feed.url}`);
+        const user = await getUserById(feed.user_id);
+        console.log(` - created by: ${user.name}`);
+    };
 }
 
 export function registerCommand(registry: CommandsRegistry, cmdName: string, handler: CommandHandler) {

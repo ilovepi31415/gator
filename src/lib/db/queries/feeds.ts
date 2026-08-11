@@ -9,6 +9,11 @@ export async function createFeed(name: string, url: string, user_id: string) {
     return result;
 }
 
+export async function getFeeds() {
+    const result = await db.select().from(feeds);
+    return result;
+}
+
 export function printFeed(feed: Feed, user: User) {
     console.log(`Feed: ${feed.name}`);
     console.log(`URL: ${feed.url}`);

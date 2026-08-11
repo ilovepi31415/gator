@@ -15,6 +15,13 @@
       "when": 1786413816207,
       "tag": "0001_keen_power_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786418939684,
+      "tag": "0002_curious_greymalkin",
+      "breakpoints": true
     }
   ]
 }
