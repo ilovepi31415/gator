@@ -1,10 +1,11 @@
-import { handlerLogin, handlerRegister, handlerReset, registerCommand, runCommand, type CommandsRegistry } from "./commands";
+import { handlerLogin, handlerRegister, handlerReset, handlerUsers, registerCommand, runCommand, type CommandsRegistry } from "./commands";
 
 async function main() {
   const cr: CommandsRegistry = {};
   registerCommand(cr, "login", handlerLogin);
   registerCommand(cr, "register", handlerRegister);
   registerCommand(cr, "reset", handlerReset);
+  registerCommand(cr, "users", handlerUsers);
 
   // Handle CLI input
   if (process.argv.length < 3) {

@@ -1,5 +1,5 @@
-import { setUser } from "./config";
-import { createUser, getUser, resetUsers } from "./lib/db/queries/users";
+import { readConfig, setUser } from "./config";
+import { createUser, getUser, getUsers, resetUsers } from "./lib/db/queries/users";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 export type CommandsRegistry = Record<string, CommandHandler>;
@@ -37,8 +37,22 @@ export async function handlerRegister(cmdName: string, ...args: string[]) {
     }
 }
 
-export async function handlerReset(cmdName: string, ...args: string[]) {
+export async function handlerReset(cmdName: string) {
     await resetUsers();
+}
+
+export async function handlerUsers(cmdName: string, ...args: string[]) {
+    const users = await getUsers();
+    const cfg = await readConfig();
+    const curr = cfg.currentUserName;
+    users.forEach((field) => {
+        const user = field.field1;
+        if (user == curr) {
+            console.log(`* ${user} (current)`)
+        } else {
+            console.log(`* ${user}`);
+        }
+    });
 }
 
 export function registerCommand(registry: CommandsRegistry, cmdName: string, handler: CommandHandler) {
