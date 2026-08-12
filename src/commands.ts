@@ -74,6 +74,7 @@ export async function handlerUsers(cmdName: string, ...args: string[]) {
 }
 
 export async function handlerAgg(cmdName: string, ...args: string[]) {
+    // Handle time interval
     const timeStr = args[0];
     if (!timeStr) {
         throw new Error("No time listed");
@@ -104,6 +105,7 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
     const time = parseInt(match[1]) * mult;
     console.log(`Collecting feeds every ${timeStr}`);
 
+    // Scrape feeds initially and then on interval
     scrapeFeeds().catch((err) => {
         console.log(`Error scraping feeds: ${err}`);
     });
@@ -115,6 +117,7 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
         console.log("scraping");
     }, time);
 
+    // keeps process running until force close
     await new Promise<void>((resolve) => {
         process.on("SIGINT", () => {
             console.log("Shutting down feed aggregator...");
@@ -171,8 +174,7 @@ export async function handlerUnfollow(cmdName: string, user: User, ...args: stri
 
 export async function handlerBrowse(cmdName: string, user: User, ...args: string[]) {
     const amt = parseInt(args[0]);
-    const posts = await getPostsForUser(user, amt || 2);
-    console.log(posts.length);
+    const posts = await getPostsForUser(user, amt || 2); // Defaults to 2 posts
     for (const post of posts) {
         console.log(`Post: ${post.posts.title}`);
         console.log(post.posts.description);
