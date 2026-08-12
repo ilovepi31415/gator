@@ -1,8 +1,6 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { db } from "..";
 import { feed_follows, feeds, users } from "../schema";
-import { from } from "node:stream/iter";
-import { url } from "node:inspector";
 
 export type Feed = typeof feeds.$inferSelect; // feeds is the table object in schema.ts
 export type User = typeof users.$inferSelect;
@@ -50,4 +48,13 @@ export async function createFeedFollow(feed: Feed, user: User) {
 
 export async function unfollow(feed: Feed, user: User) {
     await db.delete(feed_follows).where(and(eq(feed_follows.feed_id, feed.id), eq(feed_follows.user_id, user.id)));
+}
+
+export async function markFeedFetched(feed: Feed) {
+    await db.update(feeds).set({ last_fetched_at: new Date(), updatedAt: new Date()}).where(eq(feeds.id, feed.id));
+}
+
+export async function getNextFeedToFetch() {
+    const [result] = await db.select().from(feeds).orderBy(sql`${feeds.last_fetched_at} ASC NULLS FIRST`).limit(1);
+    return result;
 }

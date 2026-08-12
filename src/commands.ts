@@ -1,9 +1,10 @@
 import { url } from "node:inspector";
 import { readConfig, setUser } from "./config";
-import { fetchFeed } from "./feed";
+import { fetchFeed, scrapeFeeds } from "./feed";
 import { createFeed, createFeedFollow, getFeedByUrl, getFeeds, getFeedsFollowedByUser, printFeed, unfollow, User } from "./lib/db/queries/feeds";
 import { createUser, getUser, getUserById, getUsers, resetUsers } from "./lib/db/queries/users";
 import { UUID } from "node:crypto";
+import { error } from "node:console";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 export type UserCommandHandler = (cmdName: string, user: User, ...args: string[]) => Promise<void>;
@@ -72,8 +73,50 @@ export async function handlerUsers(cmdName: string, ...args: string[]) {
 }
 
 export async function handlerAgg(cmdName: string, ...args: string[]) {
-    const response = await fetchFeed("https://www.wagslane.dev/index.xml");
-    console.log(JSON.stringify(response));
+    const timeStr = args[0];
+    if (!timeStr) {
+        throw new Error("No time listed");
+    }
+    const regex = /^(\d+)(ms|s|m|h)$/;
+    const match = timeStr.match(regex);
+    if (!match) {
+        throw new Error("Badly formatted time");
+    }
+    const unit = match[2];
+    let mult;
+    switch (unit) {
+        case "ms":
+            mult = 1;
+            break;
+        case "s":
+            mult = 1000;
+            break;
+        case "m":
+            mult = 1000 * 60;
+            break;
+        case "h":
+            mult = 1000 * 60 * 60;
+            break;
+        default:
+            throw new Error("Badly formatted unit");
+    }
+    const time = parseInt(match[1]) * mult;
+    console.log(`Collecting feeds every ${timeStr}`);
+
+    scrapeFeeds().catch();
+
+    const interval = setInterval(() => {
+        scrapeFeeds().catch();
+        console.log("scraping");
+    }, time);
+
+    await new Promise<void>((resolve) => {
+        process.on("SIGINT", () => {
+            console.log("Shutting down feed aggregator...");
+            clearInterval(interval);
+            resolve();
+        }); 
+    });
 }
 
 export async function handlerAddFeed(cmdName: string, user: User, ...args: string[]) {
