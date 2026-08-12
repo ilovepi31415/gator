@@ -60,7 +60,7 @@ export async function fetchFeed(feedURL: string): Promise<RSSFeed> {
             items = [channel.item]
         }
     }
-    items.forEach((item: RSSItem) => {
+    (items ?? []).forEach((item: RSSItem) => {
         if (item.title && item.link && item.description && item.pubDate) {
             output.channel.item.push({
                 title: item.title,

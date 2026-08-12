@@ -103,10 +103,14 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
     const time = parseInt(match[1]) * mult;
     console.log(`Collecting feeds every ${timeStr}`);
 
-    scrapeFeeds().catch();
+    scrapeFeeds().catch((err) => {
+        console.log(`Error scraping feeds: ${err}`);
+    });
 
     const interval = setInterval(() => {
-        scrapeFeeds().catch();
+        scrapeFeeds().catch((err) => {
+            console.log(`Error scraping feeds: ${err}`);
+        });
         console.log("scraping");
     }, time);
 
