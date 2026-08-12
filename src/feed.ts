@@ -79,7 +79,7 @@ export async function scrapeFeeds() {
     const data = await fetchFeed(nf.url);
     await markFeedFetched(nf);
     for (const item of data.channel.item) {
-            createPost(
+            await createPost(
                 item.title,
                 item.description,
                 item.link,

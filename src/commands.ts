@@ -172,7 +172,7 @@ export async function handlerUnfollow(cmdName: string, user: User, ...args: stri
 export async function handlerBrowse(cmdName: string, user: User, ...args: string[]) {
     const amt = parseInt(args[0]);
     const posts = await getPostsForUser(user, amt || 2);
-    console.log(posts.length)
+    console.log(posts.length);
     for (const post of posts) {
         console.log(`Post: ${post.posts.title}`);
         console.log(post.posts.description);
