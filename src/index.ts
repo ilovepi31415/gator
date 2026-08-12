@@ -1,4 +1,4 @@
-import { handlerAddFeed, handlerAgg, handlerFeeds, handlerFollow, handlerFollowing, handlerLogin, handlerRegister, handlerReset, handlerUnfollow, handlerUsers, middlewareLoggedIn, registerCommand, runCommand, type CommandsRegistry } from "./commands";
+import { handlerAddFeed, handlerAgg, handlerBrowse, handlerFeeds, handlerFollow, handlerFollowing, handlerLogin, handlerRegister, handlerReset, handlerUnfollow, handlerUsers, middlewareLoggedIn, registerCommand, runCommand, type CommandsRegistry } from "./commands";
 
 async function main() {
   const cr: CommandsRegistry = {};
@@ -12,6 +12,7 @@ async function main() {
   registerCommand(cr, "follow", middlewareLoggedIn(handlerFollow));
   registerCommand(cr, "following", middlewareLoggedIn(handlerFollowing));
   registerCommand(cr, "unfollow", middlewareLoggedIn(handlerUnfollow));
+  registerCommand(cr, "browse", middlewareLoggedIn(handlerBrowse));
 
   // Handle CLI input
   if (process.argv.length < 3) {

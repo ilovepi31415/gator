@@ -5,6 +5,7 @@ import { createFeed, createFeedFollow, getFeedByUrl, getFeeds, getFeedsFollowedB
 import { createUser, getUser, getUserById, getUsers, resetUsers } from "./lib/db/queries/users";
 import { UUID } from "node:crypto";
 import { error } from "node:console";
+import { getPostsForUser } from "./lib/db/queries/posts";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 export type UserCommandHandler = (cmdName: string, user: User, ...args: string[]) => Promise<void>;
@@ -166,6 +167,16 @@ export async function handlerUnfollow(cmdName: string, user: User, ...args: stri
     const feedUrl = args[0];
     const feed = await getFeedByUrl(feedUrl);
     await unfollow(feed, user);
+}
+
+export async function handlerBrowse(cmdName: string, user: User, ...args: string[]) {
+    const amt = parseInt(args[0]);
+    const posts = await getPostsForUser(user, amt || 2);
+    console.log(posts.length)
+    for (const post of posts) {
+        console.log(`Post: ${post.posts.title}`);
+        console.log(post.posts.description);
+    }
 }
 
 export function registerCommand(registry: CommandsRegistry, cmdName: string, handler: CommandHandler) {
